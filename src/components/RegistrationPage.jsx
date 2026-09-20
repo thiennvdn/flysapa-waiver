@@ -3,6 +3,7 @@ import InputField from './InputField';
 import SectionTitle from './SectionTitle';
 import PageHeader from './PageHeader';
 import PageFooter from './PageFooter';
+import StaffTable from './StaffTable';
 
 function GenderRadio({ id, value, label, checked, onChange }) {
   return (
@@ -26,6 +27,9 @@ const RegistrationPage = forwardRef(function RegistrationPage({ formData, onChan
   );
   return (
     <div ref={ref} className="p-8 md:p-12 min-h-[1056px] flex flex-col bg-white shadow-lg rounded-lg">
+      <div className="mb-4">
+        <StaffTable />
+      </div>
       <PageHeader />
       <div className="flex-grow">
         <h1 className="text-2xl font-bold text-center my-8 text-gray-800">MẪU ĐĂNG KÝ BAY | Registration Form</h1>
