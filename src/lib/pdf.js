@@ -1,4 +1,7 @@
-import html2canvasLib from 'html2canvas';
+// html2canvas-pro: maintained fork that understands modern color functions
+// (oklch/oklab/lab/lch/color()). Browser extensions and newer UA styles can
+// inject those into computed styles; the original html2canvas throws on them.
+import html2canvasLib from 'html2canvas-pro';
 import { jsPDF as jsPDFLib } from 'jspdf';
 
 // A4 is 210 x 297 mm. Each page card is stretched to that ratio while it is

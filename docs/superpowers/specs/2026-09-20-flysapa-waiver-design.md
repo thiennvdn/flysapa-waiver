@@ -25,7 +25,7 @@ Registration" button and its Cloud Function backend. There is no backend.
 
 | Topic | Decision |
 |---|---|
-| Stack | Vite + React 19 + Tailwind CSS (built, not CDN). `jspdf` + `html2canvas` from npm. |
+| Stack | Vite + React 19 + Tailwind CSS (built, not CDN). `jspdf` + `html2canvas-pro` (fork of html2canvas that parses oklch/lab/color() — browser extensions inject those and 1.4.1 throws) from npm. |
 | Hosting | Public GitHub repo `flysapa-waiver` under the user's personal account (vietthien211@gmail.com). GitHub Actions builds and deploys to GitHub Pages on push to `main`. |
 | Document extraction | Gemini `gemini-3.6-flash` via REST (`generativelanguage.googleapis.com/v1beta`), called directly from the browser. No SDK. |
 | API key | **Changed 2026-09-20 (user decision):** injected at build time from the repo secret `GEMINI_API_KEY` → `VITE_GEMINI_API_KEY`; end users never enter a key. Not in source, but present in the built bundle — the key must be referrer-restricted to `https://thiennvdn.github.io/*` in Google Cloud Console. |

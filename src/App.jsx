@@ -31,7 +31,9 @@ export default function App() {
       await exportPdf({ pages: [page1Ref.current, page2Ref.current], fileName: buildPdfFilename(formData.fullName) });
     } catch (err) {
       console.error(err);
-      alert('Có lỗi khi tạo PDF, vui lòng thử lại. | There was an error while creating the PDF. Please try again.');
+      alert(`Có lỗi khi tạo PDF, vui lòng thử lại. | There was an error while creating the PDF. Please try again.
+
+${err?.message ?? err}`);
     } finally {
       setIsPdfMode(false);
       setIsProcessing(false);
