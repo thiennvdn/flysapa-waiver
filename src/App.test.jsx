@@ -1,5 +1,10 @@
-import { render, screen } from '@testing-library/react';
+import { vi } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+
+vi.mock('./lib/pdf', () => ({ exportPdf: vi.fn(async () => {}) }));
+
+import { exportPdf } from './lib/pdf';
 import App from './App';
 
 const LABELS = [
@@ -51,4 +56,15 @@ test('signature boxes are read-only', () => {
   render(<App />);
   expect(screen.getByLabelText('Ký tên | Signature')).toHaveAttribute('readonly');
   expect(screen.getByLabelText('Ngày | Date')).toHaveAttribute('readonly');
+});
+
+test('Export button calls exportPdf with both pages and the dynamic file name', async () => {
+  const user = userEvent.setup();
+  render(<App />);
+  await user.type(screen.getByLabelText('Họ và tên | Full name', { selector: '#fullName' }), 'ĐÀO MAI THANH');
+  await user.click(screen.getByRole('button', { name: /Export to PDF/ }));
+  await waitFor(() => expect(exportPdf).toHaveBeenCalledTimes(1));
+  const arg = exportPdf.mock.calls[0][0];
+  expect(arg.pages).toHaveLength(2);
+  expect(arg.fileName).toMatch(/^\d{8}_ĐÀO_MAI_THANH_FSP_Waiver\.pdf$/);
 });

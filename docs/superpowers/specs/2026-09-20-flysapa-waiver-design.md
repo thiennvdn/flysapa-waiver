@@ -172,8 +172,11 @@ Same mechanism as the reference, kept because it reproduces the sample PDF:
 1. `App` sets `isPdfMode = true`; `InputField` makes the real `<input>` text
    transparent and draws an absolutely-positioned overlay `<div>` with the
    value (html2canvas renders divs more faithfully than inputs).
-2. Both page elements get an explicit `height: 1056px`; wait ~300 ms;
-   `window.scrollTo(0, 0)`.
+2. Both page elements get `min-height = offsetWidth × 297/210` (A4 ratio,
+   ≈1267 px at the 896 px card width) so the raster fills the PDF page and the
+   footer sits at the bottom, exactly like the sample PDF; wait ~300 ms;
+   `window.scrollTo(0, 0)`. (The reference app's fixed `height: 1056px` made
+   the footer overlap the declaration paragraph, so it is not reused.)
 3. `html2canvas(el, { scale: 2, useCORS: true, scrollY: -window.scrollY })`
    per page → PNG → `jsPDF({ orientation: 'p', unit: 'px', format: 'a4',
    compress: true })`, image scaled by `min(pdfW/imgW, pdfH/imgH)`, centred
