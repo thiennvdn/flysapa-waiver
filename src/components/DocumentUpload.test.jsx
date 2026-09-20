@@ -16,48 +16,52 @@ import DocumentUpload from './DocumentUpload';
 const png = (name, size = 10) => new File([new Uint8Array(size)], name, { type: 'image/png' });
 
 beforeEach(() => {
-  localStorage.clear();
+  vi.stubEnv('VITE_GEMINI_API_KEY', 'build-time-key');
   extractDocumentData.mockReset();
 });
-afterEach(() => vi.clearAllMocks());
+afterEach(() => {
+  vi.unstubAllEnvs();
+  vi.clearAllMocks();
+});
 
-test('extract button is disabled until key and file are present', async () => {
+test('does not render an API key input', () => {
+  render(<DocumentUpload onExtracted={() => {}} />);
+  expect(screen.queryByLabelText(/Gemini API key/)).not.toBeInTheDocument();
+});
+
+test('extract button is disabled until a file is selected', async () => {
   const user = userEvent.setup();
   render(<DocumentUpload onExtracted={() => {}} />);
   const button = screen.getByRole('button', { name: /Extract & Fill/ });
-  expect(button).toBeDisabled();
-
-  await user.type(screen.getByLabelText(/Gemini API key/), 'abc');
   expect(button).toBeDisabled();
 
   await user.upload(screen.getByLabelText(/Ảnh giấy tờ/), png('cccd.png'));
   expect(button).toBeEnabled();
 });
 
-test('persists the key in localStorage and restores it', async () => {
-  const user = userEvent.setup();
-  const { unmount } = render(<DocumentUpload onExtracted={() => {}} />);
-  await user.type(screen.getByLabelText(/Gemini API key/), 'saved-key');
-  expect(localStorage.getItem('flysapa_gemini_key')).toBe('saved-key');
-  unmount();
-  render(<DocumentUpload onExtracted={() => {}} />);
-  expect(screen.getByLabelText(/Gemini API key/)).toHaveValue('saved-key');
-});
-
-test('sends resized images with the key and calls onExtracted', async () => {
+test('sends resized images with the build-time key and calls onExtracted', async () => {
   const user = userEvent.setup();
   const onExtracted = vi.fn();
   extractDocumentData.mockResolvedValue({ fullName: 'ĐÀO MAI THANH' });
   render(<DocumentUpload onExtracted={onExtracted} />);
-  await user.type(screen.getByLabelText(/Gemini API key/), 'k');
   await user.upload(screen.getByLabelText(/Ảnh giấy tờ/), [png('front.png'), png('back.png')]);
   await user.click(screen.getByRole('button', { name: /Extract & Fill/ }));
 
   await waitFor(() => expect(onExtracted).toHaveBeenCalledWith({ fullName: 'ĐÀO MAI THANH' }));
-  expect(extractDocumentData).toHaveBeenCalledWith('k', [
+  expect(extractDocumentData).toHaveBeenCalledWith('build-time-key', [
     { mimeType: 'image/jpeg', data: 'b64-front.png' },
     { mimeType: 'image/jpeg', data: 'b64-back.png' },
   ]);
+});
+
+test('shows a configuration error and disables extraction when no key was built in', async () => {
+  vi.stubEnv('VITE_GEMINI_API_KEY', '');
+  const user = userEvent.setup();
+  render(<DocumentUpload onExtracted={() => {}} />);
+  expect(screen.getByText(/chưa được cấu hình/i)).toBeInTheDocument();
+  await user.upload(screen.getByLabelText(/Ảnh giấy tờ/), png('cccd.png'));
+  expect(screen.getByRole('button', { name: /Extract & Fill/ })).toBeDisabled();
+  expect(extractDocumentData).not.toHaveBeenCalled();
 });
 
 test('shows the ExtractionError message and keeps the form untouched', async () => {
@@ -65,7 +69,6 @@ test('shows the ExtractionError message and keeps the form untouched', async () 
   const onExtracted = vi.fn();
   extractDocumentData.mockRejectedValue(new ExtractionError('Gemini lỗi | Gemini error (400): API key not valid'));
   render(<DocumentUpload onExtracted={onExtracted} />);
-  await user.type(screen.getByLabelText(/Gemini API key/), 'bad');
   await user.upload(screen.getByLabelText(/Ảnh giấy tờ/), png('x.png'));
   await user.click(screen.getByRole('button', { name: /Extract & Fill/ }));
 
@@ -73,10 +76,9 @@ test('shows the ExtractionError message and keeps the form untouched', async () 
   expect(onExtracted).not.toHaveBeenCalled();
 });
 
-test('rejects more than 3 files or files over 8 MB before calling Gemini', async () => {
+test('rejects more than 3 files before calling Gemini', async () => {
   const user = userEvent.setup();
   render(<DocumentUpload onExtracted={() => {}} />);
-  await user.type(screen.getByLabelText(/Gemini API key/), 'k');
   await user.upload(screen.getByLabelText(/Ảnh giấy tờ/), [png('1.png'), png('2.png'), png('3.png'), png('4.png')]);
   expect(await screen.findByText(/tối đa 3 ảnh/i)).toBeInTheDocument();
   expect(screen.getByRole('button', { name: /Extract & Fill/ })).toBeDisabled();

@@ -8,13 +8,11 @@ A static web app that auto-fills FlySapa's bilingual **Registration Form** and *
 
 ## Cách dùng | How to use
 
-1. Lấy Gemini API key miễn phí tại https://aistudio.google.com/apikey và dán vào ô **Gemini API key** (key chỉ lưu trong trình duyệt của bạn và chỉ gửi tới Google).
-   Get a free Gemini API key at https://aistudio.google.com/apikey and paste it into **Gemini API key** (stored only in your browser, sent only to Google).
-2. Chọn ảnh giấy tờ (CCCD – có thể là ảnh chụp màn hình VNeID – hoặc Passport; tối đa 3 ảnh, mỗi ảnh ≤ 8 MB) và bấm **Trích xuất & điền | Extract & Fill**.
+1. Chọn ảnh giấy tờ (CCCD – có thể là ảnh chụp màn hình VNeID – hoặc Passport; tối đa 3 ảnh, mỗi ảnh ≤ 8 MB) và bấm **Trích xuất & điền | Extract & Fill**.
    Select your document image(s) and click **Extract & Fill**.
-3. Kiểm tra / bổ sung các ô còn trống (địa chỉ, điện thoại, email, người liên hệ khẩn cấp).
+2. Kiểm tra / bổ sung các ô còn trống (địa chỉ, điện thoại, email, người liên hệ khẩn cấp).
    Review and complete the remaining fields.
-4. Bấm **Xuất PDF | Export to PDF** → file `YYYYMMDD_HỌ_TÊN_FSP_Waiver.pdf`. In ra và ký tay vào ô *Ký tên / Ngày*.
+3. Bấm **Xuất PDF | Export to PDF** → file `YYYYMMDD_HỌ_TÊN_FSP_Waiver.pdf`. In ra và ký tay vào ô *Ký tên / Ngày*.
    Click **Export to PDF**, print and sign by hand.
 
 ## Phát triển | Development
@@ -26,10 +24,15 @@ npm test         # vitest
 npm run build    # dist/
 ```
 
-Deploy tự động lên GitHub Pages qua GitHub Actions khi push lên `main`.
+Ứng dụng cần Gemini API key lúc build (biến `VITE_GEMINI_API_KEY`):
+
+- **Local:** tạo file `.env.local` (đã gitignore) với nội dung `VITE_GEMINI_API_KEY=<key>`.
+- **GitHub Pages:** key nằm trong repo secret `GEMINI_API_KEY` (`gh secret set GEMINI_API_KEY`); workflow inject vào bước build. Deploy tự động khi push lên `main`.
+
+Vì đây là app tĩnh, key sẽ có trong bundle JS của trang. Hãy giới hạn key trong Google Cloud Console: *HTTP referrers* = `https://thiennvdn.github.io/*` và chỉ cho phép *Generative Language API*.
 
 ## Công nghệ | Tech
 
 Vite · React 19 · Tailwind CSS 3 · Gemini 2.5 Flash (REST, gọi trực tiếp từ trình duyệt) · html2canvas · jsPDF
 
-Không có backend; không dữ liệu nào được lưu trên máy chủ. | No backend; nothing is stored server-side.
+Không có backend; ảnh giấy tờ chỉ gửi tới Google Gemini để đọc, không lưu ở đâu khác. | No backend; document images are sent only to Google Gemini for extraction and stored nowhere else.

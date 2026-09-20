@@ -28,7 +28,7 @@ Registration" button and its Cloud Function backend. There is no backend.
 | Stack | Vite + React 19 + Tailwind CSS (built, not CDN). `jspdf` + `html2canvas` from npm. |
 | Hosting | Public GitHub repo `flysapa-waiver` under the user's personal account (vietthien211@gmail.com). GitHub Actions builds and deploys to GitHub Pages on push to `main`. |
 | Document extraction | Gemini `gemini-2.5-flash` via REST (`generativelanguage.googleapis.com/v1beta`), called directly from the browser. No SDK. |
-| API key | Entered by the end user in the UI (password input), persisted in `localStorage`, sent only to Google. UI links to <https://aistudio.google.com/apikey>. Nothing embedded in the repo. |
+| API key | **Changed 2026-09-20 (user decision):** injected at build time from the repo secret `GEMINI_API_KEY` → `VITE_GEMINI_API_KEY`; end users never enter a key. Not in source, but present in the built bundle — the key must be referrer-restricted to `https://thiennvdn.github.io/*` in Google Cloud Console. |
 | Upload UX | One file input, accepts multiple images (e.g. CCCD front + back). Gemini auto-detects document type. |
 | UI language | Bilingual Vietnamese \| English everywhere, matching the reference form labels and PDF. |
 | Submit button | Removed. |
@@ -159,11 +159,11 @@ The CCCD row matches the sample PDF `.docs/20260920_ĐÀO_MAI_THANH_FSP_Waiver.p
 
 ## 7. API key handling (`DocumentUpload.jsx`)
 
-- Password-type input "Gemini API key", pre-filled from
-  `localStorage['flysapa_gemini_key']`; saved on change.
-- Helper text (VI | EN) with link to <https://aistudio.google.com/apikey>,
-  stating the key is stored only in this browser and sent only to Google.
-- Extract button disabled until both a key and ≥1 file are present.
+- `import.meta.env.VITE_GEMINI_API_KEY` is read at render; no key input in the UI.
+- GitHub Actions passes `secrets.GEMINI_API_KEY` as `VITE_GEMINI_API_KEY` to
+  `npm run build`; local dev uses `.env.local` (gitignored).
+- If the key is empty (unconfigured build) a red bilingual notice is shown and
+  the Extract button stays disabled.
 
 ## 8. PDF export (`lib/pdf.js`)
 
