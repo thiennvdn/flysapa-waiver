@@ -33,6 +33,6 @@ Vì đây là app tĩnh, key sẽ có trong bundle JS của trang. Hãy giới h
 
 ## Công nghệ | Tech
 
-Vite · React 19 · Tailwind CSS 3 · Gemini 2.5 Flash (REST, gọi trực tiếp từ trình duyệt) · html2canvas · jsPDF
+Vite · React 19 · Tailwind CSS 3 · Gemini 3.6 Flash (REST, gọi trực tiếp từ trình duyệt) · html2canvas · jsPDF
 
 Không có backend; ảnh giấy tờ chỉ gửi tới Google Gemini để đọc, không lưu ở đâu khác. | No backend; document images are sent only to Google Gemini for extraction and stored nowhere else.
