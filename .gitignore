@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.docs/
+.claude/
+.graphify/
+.graphifyignore
+.env
+.env.*
