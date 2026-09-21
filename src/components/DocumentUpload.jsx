@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { ExtractionError, extractDocumentData, MAX_FILES, MAX_FILE_BYTES } from '../lib/gemini';
 import { fileToResizedBase64 } from '../lib/image';
+import { getStoredApiKey } from '../lib/apiKeyStorage';
 
-// Injected at build time (GitHub Actions secret GEMINI_API_KEY -> VITE_GEMINI_API_KEY,
-// or .env.local for local dev). End users never enter a key.
-const getApiKey = () => (import.meta.env.VITE_GEMINI_API_KEY ?? '').trim();
+// Prefers a key staff pasted in via the hidden ?staff panel (per-device,
+// localStorage) so quota can be swapped without a rebuild. Falls back to the
+// build-time key (GitHub Actions secret GEMINI_API_KEY -> VITE_GEMINI_API_KEY,
+// or .env.local for local dev). End users never enter a key either way.
+const getApiKey = () => getStoredApiKey() || (import.meta.env.VITE_GEMINI_API_KEY ?? '').trim();
 const NOT_CONFIGURED =
   'Gemini API key chưa được cấu hình cho trang này | Gemini API key is not configured for this site';
 
