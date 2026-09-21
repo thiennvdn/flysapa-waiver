@@ -1,12 +1,6 @@
 import { useState } from 'react';
-import { ExtractionError, extractDocumentData, MAX_FILES, MAX_FILE_BYTES } from '../lib/gemini';
+import { ExtractionError, extractDocumentData, MAX_FILES, MAX_FILE_BYTES } from '../lib/ocr';
 import { fileToResizedBase64 } from '../lib/image';
-
-// Injected at build time (GitHub Actions secret GEMINI_API_KEY -> VITE_GEMINI_API_KEY,
-// or .env.local for local dev). End users never enter a key.
-const getApiKey = () => (import.meta.env.VITE_GEMINI_API_KEY ?? '').trim();
-const NOT_CONFIGURED =
-  'Gemini API key chưa được cấu hình cho trang này | Gemini API key is not configured for this site';
 
 function validateFiles(files) {
   if (files.length > MAX_FILES) {
@@ -18,7 +12,6 @@ function validateFiles(files) {
 }
 
 export default function DocumentUpload({ onExtracted }) {
-  const apiKey = getApiKey();
   const [files, setFiles] = useState([]);
   const [fileError, setFileError] = useState('');
   const [error, setError] = useState('');
@@ -31,7 +24,7 @@ export default function DocumentUpload({ onExtracted }) {
     setError('');
   };
 
-  const canExtract = apiKey !== '' && files.length > 0 && !fileError && !busy;
+  const canExtract = files.length > 0 && !fileError && !busy;
 
   const handleExtract = async () => {
     if (!canExtract) return;
@@ -39,7 +32,7 @@ export default function DocumentUpload({ onExtracted }) {
     setError('');
     try {
       const images = await Promise.all(files.map((f) => fileToResizedBase64(f)));
-      const partial = await extractDocumentData(apiKey, images);
+      const partial = await extractDocumentData(images);
       onExtracted(partial);
     } catch (err) {
       setError(err instanceof ExtractionError ? err.userMessage : 'Lỗi không xác định | Unexpected error');
@@ -54,8 +47,10 @@ export default function DocumentUpload({ onExtracted }) {
       <div className={`p-4 border border-indigo-200 bg-indigo-50 rounded-lg ${busy ? 'pulsating-border' : ''}`}>
         <h2 className="text-lg font-semibold text-indigo-800 mb-1">Tự động điền từ ảnh giấy tờ | Auto-fill from ID document</h2>
         <p className="text-sm text-gray-600 mb-4">
-          Tải ảnh CCCD (người Việt Nam) hoặc Passport (người nước ngoài) để tự động điền thông tin bên dưới. |
-          Upload a clear photo of your Vietnamese ID card (CCCD) or passport to automatically fill in your details below.
+          Tải ảnh CCCD (người Việt Nam) hoặc Passport (người nước ngoài) để tự động điền thông tin bên dưới. Nhận diện chạy
+          ngay trên máy, không gửi ảnh đi đâu. | Upload a clear photo of your Vietnamese ID card (CCCD) or passport to
+          automatically fill in your details below. Recognition runs on your device — your photo is never uploaded
+          anywhere.
         </p>
 
         <label htmlFor="document-upload" className="block text-sm font-medium text-gray-700">
@@ -76,13 +71,12 @@ export default function DocumentUpload({ onExtracted }) {
             disabled={!canExtract}
             className="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md text-sm hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed whitespace-nowrap"
           >
-            {busy ? 'Đang trích xuất… | Extracting…' : 'Trích xuất & điền | Extract & Fill'}
+            {busy ? 'Đang nhận diện… | Recognizing…' : 'Trích xuất & điền | Extract & Fill'}
           </button>
         </div>
         {files.length > 0 && !fileError && (
           <p className="mt-2 text-xs text-gray-600">{files.map((f) => f.name).join(', ')}</p>
         )}
-        {apiKey === '' && <p className="mt-2 text-sm text-red-600">{NOT_CONFIGURED}</p>}
         {fileError && <p className="mt-2 text-sm text-red-600">{fileError}</p>}
         {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
       </div>

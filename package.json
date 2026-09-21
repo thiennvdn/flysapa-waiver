@@ -13,8 +13,10 @@
   "dependencies": {
     "html2canvas-pro": "^2.4.4",
     "jspdf": "^4.2.1",
+    "mrz": "^5.0.2",
     "react": "^19.3.0",
-    "react-dom": "^19.3.0"
+    "react-dom": "^19.3.0",
+    "tesseract.js": "^7.0.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^7.0.1",

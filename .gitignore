@@ -6,3 +6,6 @@ dist/
 .graphifyignore
 .env
 .env.*
+
+# graphify-axet
+.graphify/
