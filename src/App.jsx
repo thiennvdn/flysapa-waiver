@@ -2,11 +2,9 @@ import { useRef, useState } from 'react';
 import { EMPTY_FORM } from './formData';
 import { exportPdf } from './lib/pdf';
 import { buildPdfFilename } from './lib/filename';
-import ApiKeySettings from './components/ApiKeySettings';
 import DocumentUpload from './components/DocumentUpload';
 import RegistrationPage from './components/RegistrationPage';
 import WaiverPage from './components/WaiverPage';
-import { hasStaffAccess } from './lib/apiKeyStorage';
 
 export default function App() {
   const [formData, setFormData] = useState(EMPTY_FORM);
@@ -44,7 +42,6 @@ ${err?.message ?? err}`);
 
   return (
     <div className="min-h-screen p-4 sm:p-8">
-      {hasStaffAccess() && <ApiKeySettings />}
       <div className="container max-w-4xl mx-auto space-y-8">
         <DocumentUpload onExtracted={handleExtracted} />
         <RegistrationPage ref={page1Ref} formData={formData} onChange={handleChange} onGenderChange={handleGenderChange} isPdfMode={isPdfMode} />

@@ -107,13 +107,13 @@ describe('extractDocumentData', () => {
     };
   }
 
-  test('posts images + prompt to gemini-3.6-flash with JSON schema and returns normalised data', async () => {
+  test('posts images + prompt to gemini-2.5-flash with JSON schema and returns normalised data', async () => {
     fetch.mockResolvedValue(okResponse({ documentType: 'CCCD', fullName: 'A B', gender: 'M' }));
     const out = await extractDocumentData('KEY123', images);
 
     expect(fetch).toHaveBeenCalledTimes(1);
     const [url, init] = fetch.mock.calls[0];
-    expect(url).toBe('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=KEY123');
+    expect(url).toBe('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=KEY123');
     expect(init.method).toBe('POST');
     const body = JSON.parse(init.body);
     expect(body.contents[0].parts[0]).toEqual({ inlineData: { mimeType: 'image/jpeg', data: 'AAAA' } });

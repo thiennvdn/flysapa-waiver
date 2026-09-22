@@ -68,18 +68,3 @@ test('Export button calls exportPdf with both pages and the dynamic file name', 
   expect(arg.pages).toHaveLength(2);
   expect(arg.fileName).toMatch(/^\d{8}_ĐÀO_MAI_THANH_FSP_Waiver\.pdf$/);
 });
-
-describe('staff API key panel', () => {
-  afterEach(() => window.history.pushState({}, '', '/'));
-
-  test('hidden by default', () => {
-    render(<App />);
-    expect(screen.queryByText('Gemini API key (staff only)')).not.toBeInTheDocument();
-  });
-
-  test('shown when opened with ?staff', () => {
-    window.history.pushState({}, '', '/?staff');
-    render(<App />);
-    expect(screen.getByText('Gemini API key (staff only)')).toBeInTheDocument();
-  });
-});

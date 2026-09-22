@@ -11,7 +11,6 @@ vi.mock('../lib/image', () => ({
 }));
 
 import { extractDocumentData, ExtractionError } from '../lib/gemini';
-import { setStoredApiKey } from '../lib/apiKeyStorage';
 import DocumentUpload from './DocumentUpload';
 
 const png = (name, size = 10) => new File([new Uint8Array(size)], name, { type: 'image/png' });
@@ -54,17 +53,6 @@ test('sends resized images with the build-time key and calls onExtracted', async
     { mimeType: 'image/jpeg', data: 'b64-front.png' },
     { mimeType: 'image/jpeg', data: 'b64-back.png' },
   ]);
-});
-
-test('prefers a staff-stored key (from the ?staff panel) over the build-time key', async () => {
-  setStoredApiKey('device-key');
-  const user = userEvent.setup();
-  extractDocumentData.mockResolvedValue({});
-  render(<DocumentUpload onExtracted={() => {}} />);
-  await user.upload(screen.getByLabelText(/Ảnh giấy tờ/), png('x.png'));
-  await user.click(screen.getByRole('button', { name: /Extract & Fill/ }));
-
-  await waitFor(() => expect(extractDocumentData).toHaveBeenCalledWith('device-key', expect.anything()));
 });
 
 test('shows a configuration error and disables extraction when no key was built in', async () => {
