@@ -1,6 +1,6 @@
 // Calls Gemini directly from the browser (no backend). The key is injected at
 // build time (see DocumentUpload) and is only ever sent to Google.
-const MODEL = 'gemini-2.5-flash';
+const MODEL = 'gemini-3.6-flash';
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
 export const MAX_FILES = 3;
