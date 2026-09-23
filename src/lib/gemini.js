@@ -81,7 +81,7 @@ function normalizeGender(input) {
 const clean = (v) => (v ?? '').toString().trim();
 
 // Turns the raw Gemini JSON into a partial formData object with only
-// non-empty fields, so merging never wipes what the user already typed.
+// non-empty fields (App clears the document fields before merging).
 export function normalizeExtraction(raw) {
   const type = clean(raw?.documentType).toUpperCase();
   if (type !== 'CCCD' && type !== 'PASSPORT') {

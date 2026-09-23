@@ -1,5 +1,5 @@
 import { expect, test, vi } from 'vitest';
-import { exportPdf } from './pdf';
+import { exportPdf, inlineStylesheets } from './pdf';
 
 function fakeCanvas(width, height) {
   return { width, height, toDataURL: () => `data:image/png;base64,${width}x${height}` };
@@ -62,4 +62,32 @@ test('restores styles even when rendering throws', async () => {
   await expect(exportPdf({ pages: [p1], fileName: 'z.pdf', deps: { html2canvas, jsPDF: function () { return pdf; } } })).rejects.toThrow('boom');
   expect(p1.style.minHeight).toBe('');
   expect(p1.style.height).toBe('');
+});
+
+test('passes an onclone hook that inlines <link> stylesheets into the cloned document', async () => {
+  const html2canvas = vi.fn(async () => fakeCanvas(10, 14));
+  const pdf = { internal: { pageSize: { getWidth: () => 10, getHeight: () => 14 } }, addImage: vi.fn(), addPage: vi.fn(), save: vi.fn() };
+  const p1 = document.createElement('div');
+  await exportPdf({ pages: [p1], fileName: 'a.pdf', deps: { html2canvas, jsPDF: function () { return pdf; } } });
+  expect(typeof html2canvas.mock.calls[0][1].onclone).toBe('function');
+});
+
+test('inlineStylesheets replaces same-origin <link> sheets with <style> rules', () => {
+  const href = 'http://localhost/assets/index.css';
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = href;
+  const sourceDoc = {
+    styleSheets: [{ href, ownerNode: link, cssRules: [{ cssText: '.grid { display: grid; }' }] }],
+  };
+  const clonedDoc = document.implementation.createHTMLDocument('clone');
+  const clonedLink = clonedDoc.createElement('link');
+  clonedLink.rel = 'stylesheet';
+  clonedLink.href = href;
+  clonedDoc.head.appendChild(clonedLink);
+
+  inlineStylesheets(sourceDoc, clonedDoc);
+
+  expect(clonedDoc.querySelector('link[rel="stylesheet"]')).toBeNull();
+  expect(clonedDoc.querySelector('style').textContent).toBe('.grid { display: grid; }');
 });

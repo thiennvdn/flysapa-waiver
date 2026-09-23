@@ -10,6 +10,29 @@ import { jsPDF as jsPDFLib } from 'jspdf';
 // to fit) instead of being overlapped by the footer.
 export const A4_RATIO = 297 / 210;
 
+// html2canvas renders into a cloned iframe document. <link> stylesheets there
+// are re-fetched asynchronously and may not be applied before rasterising,
+// which yields an unstyled PDF (default serif font, no layout). Swap them for
+// inline <style> tags holding the already-parsed rules of the live document.
+export function inlineStylesheets(sourceDoc, clonedDoc) {
+  for (const sheet of Array.from(sourceDoc.styleSheets)) {
+    const owner = sheet.ownerNode;
+    if (!owner || owner.tagName !== 'LINK' || !sheet.href) continue;
+    let css;
+    try {
+      css = Array.from(sheet.cssRules, (rule) => rule.cssText).join('\n');
+    } catch {
+      continue; // cross-origin sheet: keep its <link>
+    }
+    const style = clonedDoc.createElement('style');
+    style.textContent = css;
+    clonedDoc.head.appendChild(style);
+    clonedDoc.querySelectorAll('link[rel="stylesheet"]').forEach((link) => {
+      if (link.href === sheet.href) link.remove();
+    });
+  }
+}
+
 export async function exportPdf({ pages, fileName, deps = {} }) {
   const html2canvas = deps.html2canvas ?? html2canvasLib;
   const jsPDF = deps.jsPDF ?? jsPDFLib;
@@ -32,6 +55,7 @@ export async function exportPdf({ pages, fileName, deps = {} }) {
         useCORS: true,
         logging: false,
         scrollY: typeof window !== 'undefined' ? -window.scrollY : 0,
+        onclone: (clonedDoc) => inlineStylesheets(pages[i].ownerDocument, clonedDoc),
       });
       const ratio = Math.min(pdfWidth / canvas.width, pdfHeight / canvas.height);
       const w = canvas.width * ratio;

@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { EMPTY_FORM } from './formData';
+import { EMPTY_FORM, EXTRACTED_FIELDS } from './formData';
 import { exportPdf } from './lib/pdf';
 import { buildPdfFilename } from './lib/filename';
 import DocumentUpload from './components/DocumentUpload';
@@ -18,8 +18,14 @@ export default function App() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
   const handleGenderChange = (e) => setFormData((prev) => ({ ...prev, gender: e.target.value }));
-  // `partial` already excludes empty fields, so user-typed values survive.
-  const handleExtracted = (partial) => setFormData((prev) => ({ ...prev, ...partial }));
+  // Clear every document field first so a new document with fewer fields
+  // (e.g. a passport without address) doesn't keep the previous values.
+  const handleExtracted = (partial) =>
+    setFormData((prev) => ({
+      ...prev,
+      ...Object.fromEntries(EXTRACTED_FIELDS.map((key) => [key, ''])),
+      ...partial,
+    }));
 
   const handleExportPdf = async () => {
     if (!page1Ref.current || !page2Ref.current || isProcessing) return;
